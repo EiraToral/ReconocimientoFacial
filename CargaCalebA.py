@@ -47,3 +47,57 @@ batch_size = 50
 #Se aplica la función process_file al Dataset concatenado data
 labeled_images = data.map(process_file).batch(batch_size) #.map solamente guarda la información y la etiqueta para usarla cuando se requiera
 #print(labeled_images)
+
+#Se definen los datos de entrenamiento y de prueba
+#Para fines prácticos se usan 50000 imágenes
+num_train = 40000
+epochs = 10
+num_test = len(df) - num_train
+epochs_step = num_train // batch_size
+test_step = num_test // batch_size
+data_train = labeled_images.take(num_train)
+data_test = labeled_images.skip(num_train)
+
+#Se define el modelo de red neuronal
+#Para este entrenamiento se utilizan 2 capas convolucioneles con función de activación RELU y un PaxPooling de 2x2
+#model = Sequential()
+inputs = keras.Input(shape=(192, 192, 3), name='input')
+x = tf.keras.layers.Conv2D(10, (3, 3))(inputs)
+x = tf.keras.layers.Activation('relu')(x)
+x = tf.keras.layers.MaxPooling2D(2)(x)
+x = tf.keras.layers.Conv2D(10, (3, 3))(x)
+x = tf.keras.layers.Activation('relu')(x)
+x = tf.keras.layers.MaxPooling2D(2)(x)
+x = tf.keras.layers.Conv2D(10, (3, 3))(x)
+x = tf.keras.layers.Activation('relu')(x)
+x = tf.keras.layers.MaxPooling2D(2)(x)
+#Se agrega una activavión Dropout y se vectoriza las salidas de la última capa
+x = tf.keras.layers.Dropout(0.2)(x)
+x = tf.keras.layers.Flatten()(x)
+#Se agragan dos capas densas, la última con una salida de 40 neuronas
+x = tf.keras.layers.Dense(64, activation='relu')(x)
+output = tf.keras.layers.Dense(40, activation='sigmoid')(x)
+model = tf.keras.Model(inputs=inputs, outputs=output) #Se define la entrada y salida
+#Se agraga ek rensorboard y un cronómetro para medir el tiempo
+log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tbCallBack = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1, write_graph=True, write_images=True)
+
+model.summary()
+
+#Se configura el optimizador, la función de costo y las métricas
+model.compile(optimizer=tf.optimizers.RMSprop(learning_rate=0.001),
+              loss=tf.keras.losses.BinaryCrossentropy(),
+              metrics=[tf.keras.metrics.BinaryAccuracy()],
+              run_eagerly=True)
+
+#Se entrena el modelo con los datos de entrenamiento y pruebas definidos previamente
+model.fit(data_train,
+    batch_size=batch_size,
+    epochs=epochs,
+    validation_data=data_test,
+    callbacks=[tbCallBack])
+
+#Se guarda el modelo en el disco
+model.save('Modelo_entrenado_celeba.h5')
+
+###
