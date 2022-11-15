@@ -8,7 +8,7 @@ import datetime
 
 np.set_printoptions(precision=4)
 
-#Esto cambia el doble espacio entre los datos de la tabla
+#Esto cambia el doble espacio entre los datos de la tabla de CalebA
 with open('list_attr_celeba.txt', 'r') as f:
 
     print("skipping : " + f.readline())
