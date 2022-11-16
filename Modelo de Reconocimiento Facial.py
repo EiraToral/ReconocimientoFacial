@@ -66,9 +66,9 @@ model.compile(optimizer=tf.optimizers.RMSprop(learning_rate=0.001),
               loss=tf.keras.losses.BinaryCrossentropy(),
               metrics=[tf.keras.metrics.BinaryAccuracy()],
               run_eagerly=True)
-
-#Se fuarda el modelo en el disco
-model.fit_generator(
+#train
+#Se guarda el modelo en el disco
+model.fit_generator
                 train,
                 steps_per_epoch=epoch_steps,
                 epochs=epochs,
@@ -79,3 +79,4 @@ model.fit_generator(
 
 model.save('ModeloRF')
 
+###
